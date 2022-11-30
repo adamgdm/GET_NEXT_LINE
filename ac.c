@@ -79,7 +79,6 @@ char *do_ya_thong(int fd)
 			s1 = ft_strjoin(s2, s1);
 			printf("	S1 == %s\n", s1);
 			free(s2);
-			i = 0;
 		}
 	}
 	free (s1);

@@ -6,7 +6,7 @@
 /*   By: agoujdam <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:23:43 by agoujdam          #+#    #+#             */
-/*   Updated: 2022/11/25 17:28:06 by agoujdam         ###   ########.fr       */
+/*   Updated: 2022/11/29 18:23:09 by agoujdam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,4 +64,33 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 		substr[i++] = s[start++];
 	substr[i] = '\0';
 	return (substr);
+}
+
+char	*ft_strjoin(char *s1, char *s2)
+{
+	int		total;
+	char	*str;
+	int		i;
+	int		j;
+	int		k;
+
+	i = 0;
+	j = 0;
+	if (!s1 || !s2)
+		return (0);
+	k = ft_strlen(s1);
+	total = ft_strlen(s1) + ft_strlen(s2);
+	str = (char *)malloc(sizeof(char) * total + 1);
+	if (!str)
+		return (0);
+	while (i < total)
+	{
+		while (i < k)
+			str[i++] = s1[j++];
+		j = 0;
+		while (i < total)
+			str[i++] = s2[j++];
+	}
+	str[i] = '\0';
+	return (str);
 }

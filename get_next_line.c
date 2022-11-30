@@ -6,7 +6,7 @@
 /*   By: agoujdam <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:18:34 by agoujdam          #+#    #+#             */
-/*   Updated: 2022/11/26 17:37:46 by agoujdam         ###   ########.fr       */
+/*   Updated: 2022/11/29 21:44:20 by agoujdam         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,50 +19,57 @@ char	*get_next_line(int fd)
 	static char	*s;
 	char		*rendu;
 	static int	size;
-	int j = 0;
 	
 	size = BUFFER_SIZE;
-	while (j++ < 10)
-		printf("\n");
-	printf("-------------------------------- FUNCTION PROCESS --------------------------------\n");
 	if (fd <= -1)
 		return (0);
 	if (s == 0 || !count)
 	{
 		s = malloc(sizeof(char) * (size + 1));
 		count = read(fd, s, size);
-		s = ft_do_ya_thang(*s, fd, size, count);
+		s[size + 1] = '\0';
+		s = ft_check(s, fd, size, line);
 	}
 	if (!s || line > ft_how_many_lines(s))
 		return (0);
-	rendu = ft_reallocate_properly(s, count, line);
+
+	rendu = ft_reallocate_properly(s, ft_strlen(s), line);
 	line++;
-	printf("---------------------------------- FUNCTION END  ----------------------------------\n");
 	return (rendu);
 }
 
-char	*ft_do_ya_thang(char *s, int fd, int size, int n)
+char	*ft_check(char *s, int fd, int size, int line)
 {
 	int i;
-	int m;
+	int count;
+	int current_line;
+	char *s2;
 
 	i = 0;
-	while (m >= n)
+	current_line = 0;
+	while (s[i])
 	{
-		while (s[i])
-		{
-			if (s[i] == '\n' && s[i + 1] == '\0')
-				return (s);
+		while(s[i + 1] != '\0')
 			i++;
+		if (s[i] == '\n')
+		{	
+			if (current_line == line)
+				return (s);
+			current_line++;
 		}
-		i = 0;
-		size += size;
-		free(s);
-		s = malloc(sizeof(char) * (size + 1));
-		m = read(fd, s, size);
+		else
+		{
+			s2 = malloc(sizeof(char) * (size + 1));
+			count = read(fd, s2, size);
+			if (count == -1)
+				return (s);
+			s2[size + 1] = '\0';
+			s = ft_strjoin(s, s2);
+			free (s2);
+			i = 0;
+		}
 	}
-	free(s);
-	return (0);
+	return (s);
 }
 
 int	ft_how_many_lines(char *s)
