@@ -1,140 +1,122 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: agoujdam <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/25 17:18:34 by agoujdam          #+#    #+#             */
-/*   Updated: 2022/11/29 21:44:20 by agoujdam         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "get_next_line.h"
 
-char	*get_next_line(int fd)
-{	
+char *get_next_line(int fd)
+{
+	static char	*str;
+	static char *print;
 	static int	line;
-	static int	count;
-	static char	*s;
-	char		*rendu;
-	static int	size;
-	
-	size = BUFFER_SIZE;
-	if (fd <= -1)
-		return (0);
-	if (s == 0 || !count)
-	{
-		s = malloc(sizeof(char) * (size + 1));
-		count = read(fd, s, size);
-		s[size + 1] = '\0';
-		s = ft_check(s, fd, size, line);
-	}
-	if (!s || line > ft_how_many_lines(s))
-		return (0);
-
-	rendu = ft_reallocate_properly(s, ft_strlen(s), line);
-	line++;
-	return (rendu);
-}
-
-char	*ft_check(char *s, int fd, int size, int line)
-{
-	int i;
 	int count;
-	int current_line;
-	char *s2;
-
-	i = 0;
-	current_line = 0;
-	while (s[i])
-	{
-		while(s[i + 1] != '\0')
-			i++;
-		if (s[i] == '\n')
-		{	
-			if (current_line == line)
-				return (s);
-			current_line++;
-		}
-		else
-		{
-			s2 = malloc(sizeof(char) * (size + 1));
-			count = read(fd, s2, size);
-			if (count == -1)
-				return (s);
-			s2[size + 1] = '\0';
-			s = ft_strjoin(s, s2);
-			free (s2);
-			i = 0;
-		}
-	}
-	return (s);
+	
+	if (line == 0 && fd != -1)
+		str = malloc(sizeof(char) * BUFFER_SIZE);
+	if (!str && fd != -1)
+		return (0);
+	if (line == 0 && fd != -1)
+		count = read(fd, str, BUFFER_SIZE);
+	if (fd == -1)
+		return (0);
+	line++;
+	str = ft_read(str, fd, line);
+	if (print)
+		free(print);
+	print = ft_return(str);
+	str = ft_rm(str);
+	return (print);
 }
 
-int	ft_how_many_lines(char *s)
+char	*ft_restr(char *str, int fd)
 {
-	int	i;
-	int	line_count;
+	char *s;
+	char *tmp;
+	int count;
 
-	i = 0;
-	line_count = 0;
-	while (s[i])
+	s = (char *)malloc(sizeof(char) * (BUFFER_SIZE));
+	if (!s)
+		return (0);	
+	count = read(fd, s, BUFFER_SIZE);
+	if (count == -1)
 	{
-		if (s[i] == '\n')
-			line_count++;
-		i++;
+		if (s)
+			free(s);
+		return (0);
 	}
-	return (line_count - 1);
+	if (count == 0)
+		return (str);
+	s[BUFFER_SIZE] = '\0';
+	tmp = str;
+	str = ft_strjoin(str, s);
+	if (!str)
+		return (0);
+	if (s)
+		free(s);
+	if (tmp)
+		free(tmp);
+	return (str);
 }
 
-char	*ft_rendu(char *s)
+char	*ft_read(char *str, int fd, int line)
 {
-	static char	*rendu;
 	int			i;
+	int			count;
+	static int	current;
 
 	i = 0;
-	if (rendu)
-		free(rendu);
-	while (s[i] && s[i] != '\n')
-		i++;
-	if (s[i] == '\n')
-		i++;
-	rendu = ft_substr((char const *)s, 0, (size_t)i);
-	return (rendu);
-}
-
-char	*ft_reallocate_properly(char *s, long long count, unsigned int line)
-{
-	static char		*rendu;
-	unsigned int	i;
-	unsigned int	current_line;
-
-	i = 0;
-	current_line = 0;
-	if (rendu)
-		free(rendu);
-	if (s && count)
+	while (str[i])
 	{
-		while (s[i] && current_line != line)
+		if (str[i] == '\n')
+			current++;
+		if (str[i + 1] == 0)
 		{
-			while (i != line && s[i] != '\n')
-				i++;
-			if (s[i++] == '\n')
-				current_line++;
+			count = ft_strlen(str);
+			str = ft_restr(str, fd);
+			if (!str)
+				return (0);
+			if (count == ft_strlen(str))
+				return (str);
 		}
-		rendu = (char *)malloc(sizeof(char) * (count - i + 1));
-		ft_memmove((void *)rendu, (const void *)s + i, count - i + 1);
-		return (ft_rendu(rendu));
+		if (current == line)
+			return (str);
+		i++;
 	}
 	return (0);
 }
 
-int main()
+char	*ft_return(char *str)
 {
-	int fd = open("txt.txt", O_RDONLY);
+	int i;
+	char *s;
+	
+	i = 0;
+	if (!str)
+		return (0);
+	while (str[i])
+	{	
+		if (str[i] == '\n')
+			break ;
+		i++;
+	}
+	s = ft_substr(str, 0, i);
+	return (s);
+}
 
-	printf("%s", get_next_line(fd));
-	printf("%s", get_next_line(fd));
-	printf("%s", get_next_line(fd));
+char	*ft_rm(char *str)
+{
+	int i;
+	int j;
+	char *s;
+	
+	i = 0;
+	j = 0;
+	if (!str)
+		return (0);
+	while (str[j])
+		j++;	
+	while (str[i])
+	{	
+		if (str[i] == '\n')
+			break ;
+		i++;
+	}
+	s = ft_substr(str, i + 1, j);
+	return (s);
 }
