@@ -7,13 +7,16 @@ char *get_next_line(int fd)
 	static int	line;
 	int count;
 	
-	if (line == 0 && fd != -1)
+	if (line == 0 && fd >= 0)
 		str = malloc(sizeof(char) * BUFFER_SIZE);
-	if (!str && fd != -1)
+	if (!str && fd >= 0)
+	{
+		free(str);
 		return (0);
-	if (line == 0 && fd != -1)
+	}
+	if (line == 0 && fd >= 0)
 		count = read(fd, str, BUFFER_SIZE);
-	if (fd == -1)
+	if (fd <= -1)
 		return (0);
 	line++;
 	str = ft_read(str, fd, line);
@@ -36,8 +39,7 @@ char	*ft_restr(char *str, int fd)
 	count = read(fd, s, BUFFER_SIZE);
 	if (count == -1)
 	{
-		if (s)
-			free(s);
+		free(s);
 		return (0);
 	}
 	if (count == 0)
@@ -47,10 +49,8 @@ char	*ft_restr(char *str, int fd)
 	str = ft_strjoin(str, s);
 	if (!str)
 		return (0);
-	if (s)
-		free(s);
-	if (tmp)
-		free(tmp);
+	free(s);
+	free(tmp);
 	return (str);
 }
 
@@ -61,7 +61,7 @@ char	*ft_read(char *str, int fd, int line)
 	static int	current;
 
 	i = 0;
-	while (str[i])
+	while (str[i] && i < ft_strlen(str) + 1)
 	{
 		if (str[i] == '\n')
 			current++;
@@ -95,7 +95,8 @@ char	*ft_return(char *str)
 			break ;
 		i++;
 	}
-	s = ft_substr(str, 0, i);
+	s = ft_substr(str, 0, i + 1);
+	s[i] = '\n';
 	return (s);
 }
 
@@ -120,3 +121,17 @@ char	*ft_rm(char *str)
 	s = ft_substr(str, i + 1, j);
 	return (s);
 }
+/*
+int main()
+{
+	int fd = open("txt.txt", O_RDONLY);
+
+	printf("%s", get_next_line(fd));
+	printf("%s", get_next_line(fd));
+	printf("%s", get_next_line(fd));
+	printf("%s", get_next_line(fd));
+	printf("%s", get_next_line(fd));
+	printf("%s", get_next_line(fd));
+
+
+}[33~**/
