@@ -1,126 +1,95 @@
 #include "get_next_line.h"
 
-char *get_next_line(int fd)
+size_t	ft_strlen(const char *s)
 {
-	static char	*str;
-	static char *print;
-	static int	line;
-	int count;
-	
-	if (line == 0 && fd >= 0)
-		str = malloc(sizeof(char) * BUFFER_SIZE);
-	if (!str && fd >= 0)
-	{
-		free(str);
-		return (0);
-	}
-	if (line == 0 && fd >= 0)
-		count = read(fd, str, BUFFER_SIZE);
-	if (fd <= -1)
-		return (0);
-	line++;
-	str = ft_read(str, fd, line);
-	if (print)
-		free(print);
-	print = ft_return(str);
-	str = ft_rm(str);
-	return (print);
-}
-
-char	*ft_restr(char *str, int fd)
-{
-	char *s;
-	char *tmp;
-	int count;
-
-	s = (char *)malloc(sizeof(char) * (BUFFER_SIZE));
-	if (!s)
-		return (0);	
-	count = read(fd, s, BUFFER_SIZE);
-	if (count == -1)
-	{
-		free(s);
-		return (0);
-	}
-	if (count == 0)
-		return (str);
-	s[BUFFER_SIZE] = '\0';
-	tmp = str;
-	str = ft_strjoin(str, s);
-	if (!str)
-		return (0);
-	free(s);
-	free(tmp);
-	return (str);
-}
-
-char	*ft_read(char *str, int fd, int line)
-{
-	int			i;
-	int			count;
-	static int	current;
+	size_t	i;
 
 	i = 0;
-	while (str[i] && i < ft_strlen(str) + 1)
+	if (!s)
+		return (0);
+	while (s[i])
+		i++;
+	return (i);
+}
+
+typedef struct t_lens 
+{
+	int len_s1;
+	int len_s2;
+	int total;
+}	t_len;
+
+char	*ft_strchr(const char *s, int c)
+{
+	int		i;
+	int		lsrc;
+	char	*str;
+
+	str = (char *)s;
+	if (!str)
+		return (0);
+	i = 0;
+	lsrc = ft_strlen(s);
+	if ((unsigned char)c == '\0')
+		return (str + lsrc);
+	while (i <= lsrc && str[i])
 	{
-		if (str[i] == '\n')
-			current++;
-		if (str[i + 1] == 0)
-		{
-			count = ft_strlen(str);
-			str = ft_restr(str, fd);
-			if (!str)
-				return (0);
-			if (count == ft_strlen(str))
-				return (str);
-		}
-		if (current == line)
-			return (str);
+		if (str[i] == (unsigned char)c)
+			return (str + i);
 		i++;
 	}
+	if (!c)
+		return (str + i);
 	return (0);
 }
 
-char	*ft_return(char *str)
+char	*ft_substr(char const *s, unsigned int start, size_t len)
 {
-	int i;
-	char *s;
-	
+	size_t	i;
+	size_t	sub_len;
+	char	*substr;
+
 	i = 0;
-	if (!str)
+	if (!s)
 		return (0);
-	while (str[i])
-	{	
-		if (str[i] == '\n')
-			break ;
-		i++;
-	}
-	s = ft_substr(str, 0, i + 1);
-	s[i] = '\n';
-	return (s);
+	sub_len = start;
+	substr = calloc(sizeof(char), (len + 1));
+	if (!substr || !s)
+		return (0);
+	while (start < sub_len + len)
+		substr[i++] = s[start++];
+	substr[i] = '\0';
+	return (substr);
 }
 
-char	*ft_rm(char *str)
+char	*ft_strjoin(char *s1, char *s2, int i, int j)
 {
-	int i;
-	int j;
-	char *s;
-	
+	char	*new;
+	t_len		x;
+
+	if (!s2)
+		return (NULL);
+	if (!s1)
+		return (ft_substr(s2, 0, ft_strlen(s2)));
 	i = 0;
-	j = 0;
-	if (!str)
-		return (0);
-	while (str[j])
-		j++;	
-	while (str[i])
-	{	
-		if (str[i] == '\n')
-			break ;
+	j = ft_strlen(s1);
+	x.len_s1 = ft_strlen(s1);
+	x.len_s2 = ft_strlen(s2);
+	new = malloc((x.len_s1 + x.len_s2 + 1) * sizeof(char));
+	if (!new)
+		return (NULL);
+	while (i < x.len_s1)
+	{
+		new[i] = s1[i];
 		i++;
 	}
-	s = ft_substr(str, i + 1, j);
-	return (s);
+	i = 0;
+	while (i < x.len_s2)
+		new[j++] = s2[i++];
+	new[j] = '\0';
+	return (new);
 }
+
 /*
 int main()
 {
